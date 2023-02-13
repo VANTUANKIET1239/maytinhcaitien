@@ -5,7 +5,10 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.annotation.SuppressLint;
+import android.app.Activity;
+import android.content.Intent;
 import android.os.Bundle;
+import android.security.identity.CipherSuiteNotSupportedException;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
@@ -24,7 +27,12 @@ import java.util.Stack;
 public class MainActivity extends AppCompatActivity {
 
     private TextView resultTextView;
+    private String ketqualuu;
+    private Button lichsu;
 
+    private ArrayList<String> luutruls = new ArrayList<>();
+    private static final String STATE_COUNTER = "counter";
+    private static final String STATE_LS = "lichsu";
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -47,10 +55,17 @@ public class MainActivity extends AppCompatActivity {
         Button btnMinus = findViewById(R.id.buttonMinus);
         Button btnEqual = findViewById(R.id.buttonEqual);
         Button btnEXP = findViewById(R.id.buttonExp);
-
+        lichsu = findViewById(R.id.LS);
         Button[] btn = {button0, button1,button2,button3,button4,button5,button6,button7,button8,button9};
         String[] dau = {"/","-","+","*"};
         Button[] nutdau = {btnDivide, btnMinus, btnPlus, btnMultiply};
+
+        if(savedInstanceState != null){
+            ketqualuu = savedInstanceState.getString(STATE_COUNTER,"");
+            resultTextView.setText(ketqualuu);
+            luutruls = savedInstanceState.getStringArrayList(STATE_LS);
+        }
+
         for (int i = 0; i < nutdau.length; i++){
             String dautam = dau[i];
             nutdau[i].setOnClickListener(new View.OnClickListener() {
@@ -83,12 +98,33 @@ public class MainActivity extends AppCompatActivity {
                     resultTextView.setText("ERROR");
                 }
                 else{
+                    String lt = "";
+                    lt += String.valueOf(resultTextView.getText());
                     String[] postfix = Infix.chuyendoi(String.valueOf(resultTextView.getText()));
                     double ketqua = Infix.tinhtoan(postfix);
+                    lt += " = "+ String.valueOf(ketqua);
                     resultTextView.setText(String.valueOf(ketqua));
+                    luutruls.add(lt);
+
                 }
 
             }
         });
+       lichsu.setOnClickListener(new View.OnClickListener() {
+           @Override
+           public void onClick(View v) {
+               Intent intent = new Intent(getApplicationContext(), LichSuTinhToan.class);
+                intent.putStringArrayListExtra("LS",luutruls);
+                //luutruls.clear();
+                startActivity(intent);
+           }
+       });
+
+    }
+    @Override
+    protected void onSaveInstanceState(Bundle outState){
+        super.onSaveInstanceState(outState);
+        outState.putString(STATE_COUNTER,String.valueOf(resultTextView.getText()));
+        outState.putStringArrayList(STATE_LS,luutruls);
     }
 }
